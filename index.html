@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تقارير أداء المحتوى | أكاديمية النخبة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .kpi-card {
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .print-only {
+                display: block;
+            }
+            body {
+                background-color: white;
+            }
+            .shadow-lg {
+                box-shadow: none !important;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-blue-900 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold"><i class="fas fa-chart-line ml-2"></i>نظام تتبع أداء المحتوى (KPIs Dashboard)</h1>
+            <span class="text-sm bg-blue-800 px-3 py-1 rounded-full">أكاديمية النخبة الدولية</span>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-6">
+
+        <!-- Sidebar: Input Form -->
+        <div class="w-full lg:w-1/4 bg-white p-6 rounded-lg shadow-lg h-fit no-print">
+            <h2 class="text-xl font-bold mb-4 text-blue-900 border-b pb-2">1. إدخال بيانات الشهر</h2>
+            
+            <form id="kpiForm" onsubmit="addMonthData(event)">
+                <div class="mb-3">
+                    <label class="block text-sm font-bold mb-1">الشهر</label>
+                    <select id="monthInput" class="w-full border p-2 rounded focus:outline-none focus:border-blue-500">
+                        <option value="يناير">يناير</option>
+                        <option value="فبراير">فبراير</option>
+                        <option value="مارس">مارس</option>
+                        <option value="أبريل">أبريل</option>
+                        <option value="مايو">مايو</option>
+                        <option value="يونيو">يونيو</option>
+                        <option value="يوليو">يوليو</option>
+                        <option value="أغسطس">أغسطس</option>
+                        <option value="سبتمبر">سبتمبر</option>
+                        <option value="أكتوبر">أكتوبر</option>
+                        <option value="نوفمبر">نوفمبر</option>
+                        <option value="ديسمبر">ديسمبر</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-sm font-bold mb-1">عدد البوستات (Posts)</label>
+                    <input type="number" id="postsInput" class="w-full border p-2 rounded" placeholder="مثلاً: 12" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-sm font-bold mb-1">إجمالي الوصول (Reach)</label>
+                    <input type="number" id="reachInput" class="w-full border p-2 rounded" placeholder="مثلاً: 50000" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-sm font-bold mb-1">التفاعل (Engagement)</label>
+                    <input type="number" id="engagementInput" class="w-full border p-2 rounded" placeholder="لايك + شير + كومنت" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="block text-sm font-bold mb-1">الرسائل/العملاء (Leads)</label>
+                    <input type="number" id="leadsInput" class="w-full border p-2 rounded" placeholder="الناس اللي سألت بكام" required>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    <i class="fas fa-plus ml-1"></i> إضافة للتقرير
+                </button>
+                <button type="button" onclick="window.print()" class="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+                    <i class="fas fa-print ml-1"></i> طباعة التقرير PDF
+                </button>
+            </form>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="w-full lg:w-3/4">
+            
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="kpi-card bg-white p-4 rounded-lg shadow border-r-4 border-blue-500">
+                    <div class="text-gray-500 text-sm">معدل التفاعل (Engagement Rate)</div>
+                    <div class="text-2xl font-bold text-blue-900" id="avgEngRate">0%</div>
+                    <div class="text-xs text-green-600 mt-1"><i class="fas fa-check-circle"></i> مؤشر جودة المحتوى</div>
+                </div>
+                <div class="kpi-card bg-white p-4 rounded-lg shadow border-r-4 border-green-500">
+                    <div class="text-gray-500 text-sm">معدل تحويل العملاء (Conversion)</div>
+                    <div class="text-2xl font-bold text-green-900" id="avgConvRate">0%</div>
+                    <div class="text-xs text-green-600 mt-1"><i class="fas fa-dollar-sign"></i> مؤشر المبيعات</div>
+                </div>
+                <div class="kpi-card bg-white p-4 rounded-lg shadow border-r-4 border-purple-500">
+                    <div class="text-gray-500 text-sm">إجمالي الوصول (Total Reach)</div>
+                    <div class="text-2xl font-bold text-purple-900" id="totalReachDisplay">0</div>
+                    <div class="text-xs text-purple-600 mt-1"><i class="fas fa-bullhorn"></i> مؤشر الانتشار</div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">نمو العملاء المحتملين (Leads Growth)</h3>
+                    <canvas id="leadsChart"></canvas>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">مقارنة الوصول (Reach)</h3>
+                    <canvas id="reachChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6 overflow-x-auto">
+                <h3 class="font-bold text-gray-700 mb-4">سجل البيانات الشهري</h3>
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600">
+                            <th class="p-3 border-b">الشهر</th>
+                            <th class="p-3 border-b">البوستات</th>
+                            <th class="p-3 border-b">الوصول</th>
+                            <th class="p-3 border-b">التفاعل</th>
+                            <th class="p-3 border-b">العملاء (Leads)</th>
+                            <th class="p-3 border-b">نسبة النمو</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- Rows will be added here JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Auto-Generated Email Template -->
+            <div class="bg-blue-50 border border-blue-200 p-6 rounded-lg shadow no-print">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-blue-900"><i class="fas fa-envelope-open-text ml-2"></i>تقرير جاهز للمدير (نسخ ولصق)</h3>
+                    <button onclick="copyEmail()" class="text-sm bg-white border border-blue-300 px-3 py-1 rounded hover:bg-blue-100 text-blue-700">
+                        <i class="fas fa-copy"></i> نسخ النص
+                    </button>
+                </div>
+                <textarea id="emailTemplate" class="w-full h-48 p-3 text-sm border rounded bg-white text-gray-700 focus:outline-none" readonly>
+قم بإضافة بيانات شهر واحد على الأقل ليتم توليد التقرير تلقائياً هنا...
+                </textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data Storage
+        let reportData = [];
+        let leadsChartInstance = null;
+        let reachChartInstance = null;
+
+        // Initialize Charts
+        function initCharts() {
+            const ctxLeads = document.getElementById('leadsChart').getContext('2d');
+            const ctxReach = document.getElementById('reachChart').getContext('2d');
+
+            leadsChartInstance = new Chart(ctxLeads, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'الرسائل (Leads)', data: [], backgroundColor: '#10B981', borderRadius: 5 }] },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            reachChartInstance = new Chart(ctxReach, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'الوصول (Reach)', data: [], borderColor: '#3B82F6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.1)' }] },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // Add Data Function
+        function addMonthData(e) {
+            e.preventDefault();
+            
+            // Get values
+            const month = document.getElementById('monthInput').value;
+            const posts = parseInt(document.getElementById('postsInput').value);
+            const reach = parseInt(document.getElementById('reachInput').value);
+            const engagement = parseInt(document.getElementById('engagementInput').value);
+            const leads = parseInt(document.getElementById('leadsInput').value);
+
+            // Calculations
+            let growth = 0;
+            let leadsGrowth = 0; // New: Calculate Leads Growth separately
+
+            if (reportData.length > 0) {
+                const lastData = reportData[reportData.length - 1];
+                
+                // Reach Growth
+                if (lastData.reach > 0) {
+                    growth = ((reach - lastData.reach) / lastData.reach) * 100;
+                }
+                
+                // Leads Growth
+                if (lastData.leads > 0) {
+                    leadsGrowth = ((leads - lastData.leads) / lastData.leads) * 100;
+                }
+            }
+
+            const engRate = ((engagement / reach) * 100).toFixed(2);
+            const convRate = ((leads / reach) * 100).toFixed(2);
+
+            // Add to array
+            const newData = { 
+                month, 
+                posts, 
+                reach, 
+                engagement, 
+                leads, 
+                growth: growth.toFixed(1),
+                leadsGrowth: leadsGrowth.toFixed(1), // Store leads growth
+                engRate, 
+                convRate 
+            };
+            reportData.push(newData);
+
+            // Update UI
+            updateTable();
+            updateChartsData();
+            updateSummaryCards();
+            generateEmailTemplate(newData);
+
+            // Reset form partly
+            document.getElementById('postsInput').value = '';
+            document.getElementById('reachInput').value = '';
+            document.getElementById('engagementInput').value = '';
+            document.getElementById('leadsInput').value = '';
+        }
+
+        // Update Table
+        function updateTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            reportData.forEach(row => {
+                const growthClass = row.growth > 0 ? 'text-green-600' : (row.growth < 0 ? 'text-red-600' : 'text-gray-600');
+                const growthIcon = row.growth > 0 ? '↑' : (row.growth < 0 ? '↓' : '-');
+                
+                const tr = `
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-bold">${row.month}</td>
+                        <td class="p-3">${row.posts}</td>
+                        <td class="p-3">${row.reach.toLocaleString()}</td>
+                        <td class="p-3">${row.engagement.toLocaleString()} <span class="text-xs text-gray-500">(${row.engRate}%)</span></td>
+                        <td class="p-3 font-bold text-blue-800">${row.leads}</td>
+                        <td class="p-3 ${growthClass} font-bold" dir="ltr">${row.growth}% ${growthIcon}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += tr;
+            });
+        }
+
+        // Update Charts
+        function updateChartsData() {
+            const labels = reportData.map(d => d.month);
+            const leads = reportData.map(d => d.leads);
+            const reach = reportData.map(d => d.reach);
+
+            leadsChartInstance.data.labels = labels;
+            leadsChartInstance.data.datasets[0].data = leads;
+            leadsChartInstance.update();
+
+            reachChartInstance.data.labels = labels;
+            reachChartInstance.data.datasets[0].data = reach;
+            reachChartInstance.update();
+        }
+
+        // Update Summary Cards
+        function updateSummaryCards() {
+            if (reportData.length === 0) return;
+            
+            // Calculate averages/totals based on all data
+            let totalReach = 0;
+            let totalEngRate = 0;
+            let totalConvRate = 0;
+
+            reportData.forEach(d => {
+                totalReach += d.reach;
+                totalEngRate += parseFloat(d.engRate);
+                totalConvRate += parseFloat(d.convRate);
+            });
+
+            document.getElementById('totalReachDisplay').innerText = totalReach.toLocaleString();
+            document.getElementById('avgEngRate').innerText = (totalEngRate / reportData.length).toFixed(2) + '%';
+            document.getElementById('avgConvRate').innerText = (totalConvRate / reportData.length).toFixed(2) + '%';
+        }
+
+        // Generate Smart Email Template
+        function generateEmailTemplate(data) {
+            // Logic for Reach Text
+            let reachText = "";
+            if (data.growth > 0) {
+                reachText = `📈 مما يمثل زيادة بنسبة ${data.growth}% مقارنة بالشهر السابق.`;
+            } else if (data.growth < 0) {
+                reachText = `📉 مما يمثل تراجعاً طفيفاً بنسبة ${Math.abs(data.growth)}% مقارنة بالشهر السابق.`;
+            } else {
+                reachText = `مع الحفاظ على ثبات معدلات الوصول مقارنة بالشهر السابق.`;
+            }
+
+            // Logic for Leads Text
+            let leadsText = "";
+            if (data.leadsGrowth > 0) {
+                leadsText = `(بزيادة ${data.leadsGrowth}% عن الشهر الماضي)`;
+            } else if (data.leadsGrowth < 0) {
+                leadsText = `(بتراجع ${Math.abs(data.leadsGrowth)}% عن الشهر الماضي)`;
+            }
+
+            const emailText = `العنوان: تقرير أداء المحتوى الرقمي - شهر ${data.month}
+
+السيد/ محمد شتات،
+تحياتي،
+
+إليك ملخص أداء المحتوى لهذا الشهر، وتأثيره المباشر على أهداف الأكاديمية:
+
+1. الأرقام الرئيسية (Key Highlights):
+- قمنا بنشر ${data.posts} قطعة محتوى (تعليمي/ترويجي).
+- حققنا وصولاً (Reach) لـ ${data.reach.toLocaleString()} عميل محتمل، ${reachText}
+- نجحنا في جذب ${data.leads} استفسار مباشر (Leads) عن الكورسات ${leadsText}، بمعدل تحويل ${data.convRate}%.
+
+2. الجودة والتفاعل:
+- بلغ معدل التفاعل ${data.engRate}%، مما يعكس مدى اهتمام الجمهور بالمحتوى المقدم.
+
+3. التوصيات للشهر القادم:
+بناءً على هذه الأرقام، سنقوم بالتركيز على تحسين المحتوى لزيادة عدد الرسائل (Leads) بشكل أكبر.
+
+مرفق،،
+تقرير البيانات التفصيلي.`;
+
+            document.getElementById('emailTemplate').value = emailText;
+        }
+
+        // Copy Function
+        function copyEmail() {
+            const copyText = document.getElementById("emailTemplate");
+            copyText.select();
+            document.execCommand("copy");
+            alert("تم نسخ النص! يمكنك لصقه الآن في الإيميل.");
+        }
+
+        // Start
+        window.onload = initCharts;
+
+    </script>
+</body>
+</html>
+
