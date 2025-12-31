@@ -3,370 +3,604 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تقارير أداء المحتوى | أكاديمية النخبة</title>
+    <title>Elite Multi-Platform System | أكاديمية النخبة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .kpi-card {
-            transition: all 0.3s ease;
-        }
-        .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
+        body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; transition: direction 0.3s; }
+        body.ltr { font-family: 'Inter', sans-serif; direction: ltr; }
+        .platform-icon { width: 24px; text-align: center; display: inline-block; margin-left: 5px; }
+        .card-hover:hover { transform: translateY(-3px); transition: 0.3s; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
         @media print {
-            .no-print {
-                display: none;
-            }
-            .print-only {
-                display: block;
-            }
-            body {
-                background-color: white;
-            }
-            .shadow-lg {
-                box-shadow: none !important;
-                border: 1px solid #ddd;
-            }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; }
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-slate-800">
 
     <!-- Header -->
-    <header class="bg-blue-900 text-white p-4 shadow-md">
+    <header class="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50 border-b-4 border-blue-500">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold"><i class="fas fa-chart-line ml-2"></i>نظام تتبع أداء المحتوى (KPIs Dashboard)</h1>
-            <span class="text-sm bg-blue-800 px-3 py-1 rounded-full">أكاديمية النخبة الدولية</span>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleLanguage()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded font-bold text-sm transition">
+                    <span id="langBtnText">English</span>
+                </button>
+                <h1 class="text-lg md:text-2xl font-bold"><i class="fas fa-network-wired mx-2"></i><span data-key="appTitle">نظام إدارة المحتوى المتكامل</span></h1>
+            </div>
+            <span class="text-xs md:text-sm bg-slate-800 px-3 py-1 rounded-full border border-slate-700" data-key="academyName">أكاديمية النخبة الدولية</span>
         </div>
     </header>
 
     <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-6">
 
-        <!-- Sidebar: Input Form -->
-        <div class="w-full lg:w-1/4 bg-white p-6 rounded-lg shadow-lg h-fit no-print">
-            <h2 class="text-xl font-bold mb-4 text-blue-900 border-b pb-2">1. إدخال بيانات الشهر</h2>
-            
-            <form id="kpiForm" onsubmit="addMonthData(event)">
-                <div class="mb-3">
-                    <label class="block text-sm font-bold mb-1">الشهر</label>
-                    <select id="monthInput" class="w-full border p-2 rounded focus:outline-none focus:border-blue-500">
-                        <option value="يناير">يناير</option>
-                        <option value="فبراير">فبراير</option>
-                        <option value="مارس">مارس</option>
-                        <option value="أبريل">أبريل</option>
-                        <option value="مايو">مايو</option>
-                        <option value="يونيو">يونيو</option>
-                        <option value="يوليو">يوليو</option>
-                        <option value="أغسطس">أغسطس</option>
-                        <option value="سبتمبر">سبتمبر</option>
-                        <option value="أكتوبر">أكتوبر</option>
-                        <option value="نوفمبر">نوفمبر</option>
-                        <option value="ديسمبر">ديسمبر</option>
+        <!-- Sidebar: Inputs -->
+        <div class="w-full lg:w-1/3 bg-white rounded-lg shadow-lg h-[85vh] flex flex-col no-print">
+            <div class="p-4 border-b bg-slate-50 rounded-t-lg">
+                <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-edit mx-2"></i><span data-key="inputTitle">إدخال البيانات</span></h2>
+                <div class="mt-2">
+                    <label class="text-xs font-bold text-slate-500 block mb-1" data-key="selectMonth">اختر الشهر</label>
+                    <select id="monthInput" class="w-full border p-2 rounded text-sm bg-white focus:outline-none focus:border-blue-500">
+                        <option value="Jan">January (يناير)</option>
+                        <option value="Feb">February (فبراير)</option>
+                        <option value="Mar">March (مارس)</option>
+                        <option value="Apr">April (أبريل)</option>
+                        <option value="May">May (مايو)</option>
+                        <option value="Jun">June (يونيو)</option>
+                        <option value="Jul">July (يوليو)</option>
+                        <option value="Aug">August (أغسطس)</option>
+                        <option value="Sep">September (سبتمبر)</option>
+                        <option value="Oct">October (أكتوبر)</option>
+                        <option value="Nov">November (نوفمبر)</option>
+                        <option value="Dec">December (ديسمبر)</option>
                     </select>
                 </div>
-
-                <div class="mb-3">
-                    <label class="block text-sm font-bold mb-1">عدد البوستات (Posts)</label>
-                    <input type="number" id="postsInput" class="w-full border p-2 rounded" placeholder="مثلاً: 12" required>
+            </div>
+            
+            <form id="multiPlatformForm" onsubmit="calculateReport(event)" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-6">
+                <div id="platformsContainer">
+                    <!-- Platforms Generated via JS -->
                 </div>
-
-                <div class="mb-3">
-                    <label class="block text-sm font-bold mb-1">إجمالي الوصول (Reach)</label>
-                    <input type="number" id="reachInput" class="w-full border p-2 rounded" placeholder="مثلاً: 50000" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="block text-sm font-bold mb-1">التفاعل (Engagement)</label>
-                    <input type="number" id="engagementInput" class="w-full border p-2 rounded" placeholder="لايك + شير + كومنت" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="block text-sm font-bold mb-1">الرسائل/العملاء (Leads)</label>
-                    <input type="number" id="leadsInput" class="w-full border p-2 rounded" placeholder="الناس اللي سألت بكام" required>
-                </div>
-
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
-                    <i class="fas fa-plus ml-1"></i> إضافة للتقرير
-                </button>
-                <button type="button" onclick="window.print()" class="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-200">
-                    <i class="fas fa-print ml-1"></i> طباعة التقرير PDF
-                </button>
             </form>
+
+            <div class="p-4 border-t bg-slate-50 rounded-b-lg">
+                <button onclick="document.getElementById('multiPlatformForm').dispatchEvent(new Event('submit'))" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded transition shadow-md flex justify-center items-center gap-2">
+                    <i class="fas fa-calculator"></i> <span data-key="genReportBtn">إصدار التقرير</span>
+                </button>
+            </div>
         </div>
 
         <!-- Main Dashboard -->
-        <div class="w-full lg:w-3/4">
+        <div class="w-full lg:w-2/3 flex flex-col gap-6">
             
             <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="kpi-card bg-white p-4 rounded-lg shadow border-r-4 border-blue-500">
-                    <div class="text-gray-500 text-sm">معدل التفاعل (Engagement Rate)</div>
-                    <div class="text-2xl font-bold text-blue-900" id="avgEngRate">0%</div>
-                    <div class="text-xs text-green-600 mt-1"><i class="fas fa-check-circle"></i> مؤشر جودة المحتوى</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow card-hover border-r-4 border-l-4 border-blue-600">
+                    <div class="text-gray-500 text-xs font-bold uppercase" data-key="totalReachLabel">إجمالي الوصول / المشاهدات</div>
+                    <div class="text-2xl font-bold text-blue-900 mt-1" id="grandReach">0</div>
+                    <div class="text-[10px] text-gray-400" data-key="totalReachSub">عبر جميع المنصات</div>
                 </div>
-                <div class="kpi-card bg-white p-4 rounded-lg shadow border-r-4 border-green-500">
-                    <div class="text-gray-500 text-sm">معدل تحويل العملاء (Conversion)</div>
-                    <div class="text-2xl font-bold text-green-900" id="avgConvRate">0%</div>
-                    <div class="text-xs text-green-600 mt-1"><i class="fas fa-dollar-sign"></i> مؤشر المبيعات</div>
+                <div class="bg-white p-4 rounded-lg shadow card-hover border-r-4 border-l-4 border-green-600">
+                    <div class="text-gray-500 text-xs font-bold uppercase" data-key="totalEngLabel">إجمالي التفاعل</div>
+                    <div class="text-2xl font-bold text-green-900 mt-1" id="grandEng">0</div>
+                    <div class="text-[10px] text-gray-400" data-key="totalEngSub">لايك، كومنت، شير</div>
                 </div>
-                <div class="kpi-card bg-white p-4 rounded-lg shadow border-r-4 border-purple-500">
-                    <div class="text-gray-500 text-sm">إجمالي الوصول (Total Reach)</div>
-                    <div class="text-2xl font-bold text-purple-900" id="totalReachDisplay">0</div>
-                    <div class="text-xs text-purple-600 mt-1"><i class="fas fa-bullhorn"></i> مؤشر الانتشار</div>
-                </div>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">نمو العملاء المحتملين (Leads Growth)</h3>
-                    <canvas id="leadsChart"></canvas>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow">
-                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">مقارنة الوصول (Reach)</h3>
-                    <canvas id="reachChart"></canvas>
+                <div class="bg-white p-4 rounded-lg shadow card-hover border-r-4 border-l-4 border-purple-600">
+                    <div class="text-gray-500 text-xs font-bold uppercase" data-key="topPlatformLabel">المنصة الأفضل</div>
+                    <div class="text-xl font-bold text-purple-900 mt-1" id="topPlatformName">-</div>
+                    <div class="text-[10px] text-purple-600" id="topPlatformStat">-</div>
                 </div>
             </div>
 
-            <!-- Data Table -->
-            <div class="bg-white p-6 rounded-lg shadow mb-6 overflow-x-auto">
-                <h3 class="font-bold text-gray-700 mb-4">سجل البيانات الشهري</h3>
-                <table class="w-full text-right border-collapse">
-                    <thead>
-                        <tr class="bg-gray-100 text-gray-600">
-                            <th class="p-3 border-b">الشهر</th>
-                            <th class="p-3 border-b">البوستات</th>
-                            <th class="p-3 border-b">الوصول</th>
-                            <th class="p-3 border-b">التفاعل</th>
-                            <th class="p-3 border-b">العملاء (Leads)</th>
-                            <th class="p-3 border-b">نسبة النمو</th>
+            <!-- Charts -->
+            <div class="bg-white p-5 rounded-lg shadow">
+                <h3 class="font-bold text-slate-700 mb-4 border-b pb-2 flex justify-between items-center">
+                    <span><i class="fas fa-chart-bar mx-2"></i><span data-key="chartTitle">مقارنة الأداء</span></span>
+                </h3>
+                <div class="h-64">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Table -->
+            <div class="bg-white p-5 rounded-lg shadow overflow-x-auto">
+                <h3 class="font-bold text-slate-700 mb-4 text-sm" data-key="tableTitle">تفاصيل الأداء لكل منصة</h3>
+                <table class="w-full text-right text-xs md:text-sm border-collapse">
+                    <thead class="bg-slate-100 text-slate-600">
+                        <tr>
+                            <th class="p-2 border-b text-start" data-key="colPlatform">المنصة</th>
+                            <th class="p-2 border-b text-center" data-key="colContent">المحتوى</th>
+                            <th class="p-2 border-b text-center" data-key="colReach">الوصول/المشاهدات</th>
+                            <th class="p-2 border-b text-center" data-key="colEng">التفاعل</th>
+                            <th class="p-2 border-b text-center" data-key="colRate">المعدل %</th>
                         </tr>
                     </thead>
-                    <tbody id="dataTableBody">
-                        <!-- Rows will be added here JS -->
+                    <tbody id="detailsTableBody">
+                        <tr><td colspan="5" class="p-4 text-center text-gray-400" data-key="noData">أدخل البيانات واضغط "إصدار التقرير"</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Auto-Generated Email Template -->
-            <div class="bg-blue-50 border border-blue-200 p-6 rounded-lg shadow no-print">
+            <!-- Email Generator -->
+            <div class="bg-slate-800 text-white p-6 rounded-lg shadow no-print">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-blue-900"><i class="fas fa-envelope-open-text ml-2"></i>تقرير جاهز للمدير (نسخ ولصق)</h3>
-                    <button onclick="copyEmail()" class="text-sm bg-white border border-blue-300 px-3 py-1 rounded hover:bg-blue-100 text-blue-700">
-                        <i class="fas fa-copy"></i> نسخ النص
+                    <h3 class="font-bold text-yellow-400"><i class="fas fa-envelope mx-2"></i><span data-key="emailTitle">التقرير النهائي (للنسخ)</span></h3>
+                    <button onclick="copyEmail()" class="text-xs bg-slate-600 hover:bg-slate-500 text-white px-3 py-2 rounded transition border border-slate-500">
+                        <i class="fas fa-copy"></i> <span data-key="copyBtn">نسخ النص</span>
                     </button>
                 </div>
-                <textarea id="emailTemplate" class="w-full h-48 p-3 text-sm border rounded bg-white text-gray-700 focus:outline-none" readonly>
-قم بإضافة بيانات شهر واحد على الأقل ليتم توليد التقرير تلقائياً هنا...
-                </textarea>
+                <textarea id="emailTemplate" class="w-full h-64 p-4 text-sm border border-slate-600 rounded bg-slate-900 text-slate-300 focus:outline-none font-mono leading-relaxed" readonly></textarea>
+                <div class="mt-3 text-end">
+                    <button onclick="window.print()" class="text-xs text-slate-400 hover:text-white underline">
+                        <i class="fas fa-print"></i> <span data-key="printBtn">طباعة PDF</span>
+                    </button>
+                </div>
             </div>
+
         </div>
     </div>
 
-    <!-- JavaScript Logic -->
+    <!-- Scripts -->
     <script>
-        // Data Storage
-        let reportData = [];
-        let leadsChartInstance = null;
-        let reachChartInstance = null;
+        // --- Translations ---
+        const translations = {
+            ar: {
+                appTitle: "نظام إدارة المحتوى المتكامل",
+                academyName: "أكاديمية النخبة الدولية",
+                inputTitle: "إدخال بيانات المنصات",
+                selectMonth: "اختر الشهر",
+                genReportBtn: "إصدار التقرير",
+                totalReachLabel: "إجمالي الوصول / المشاهدات",
+                totalReachSub: "عبر جميع المنصات",
+                totalEngLabel: "إجمالي التفاعل",
+                totalEngSub: "لايك، كومنت، شير",
+                topPlatformLabel: "المنصة الأفضل",
+                chartTitle: "مقارنة الأداء",
+                tableTitle: "تفاصيل الأداء لكل منصة",
+                colPlatform: "المنصة",
+                colContent: "المحتوى",
+                colReach: "الوصول/المشاهدات",
+                colEng: "التفاعل",
+                colRate: "المعدل %",
+                noData: "أدخل البيانات واضغط إصدار التقرير",
+                emailTitle: "التقرير النهائي (للنسخ)",
+                copyBtn: "نسخ النص",
+                printBtn: "طباعة PDF",
+                // Dynamic Fields Labels
+                Posts: "منشورات",
+                Videos: "فيديوهات",
+                Reach: "الوصول",
+                Engagement: "التفاعل",
+                Views: "مشاهدات",
+                Likes: "إعجابات",
+                Comments: "تعليقات",
+                Messages: "رسائل",
+                // Twitter Specific
+                VerifiedFollowers: "متابِعون موثَّقون",
+                Impressions: "مرات الظهور",
+                EngagementRateInput: "معدل المشاركة (Rate)",
+                TwEngagements: "المشاركات (Engagements)",
+                ProfileVisits: "زيارات الملف الشخصيّ",
+                Replies: "الردود",
+                Reposts: "المنشورات المُعاد نشرها",
+                Bookmarks: "العلامات المرجعية",
+                TwShares: "المشاركات (Shares)"
+            },
+            en: {
+                appTitle: "Integrated Content Ecosystem",
+                academyName: "Elite International Academy",
+                inputTitle: "Platform Data Input",
+                selectMonth: "Select Month",
+                genReportBtn: "Generate Report",
+                totalReachLabel: "Total Reach / Views",
+                totalReachSub: "Across all platforms",
+                totalEngLabel: "Total Engagement",
+                totalEngSub: "Likes, Comments, Shares",
+                topPlatformLabel: "Top Performer",
+                chartTitle: "Performance Comparison",
+                tableTitle: "Platform Performance Details",
+                colPlatform: "Platform",
+                colContent: "Content",
+                colReach: "Reach/Views",
+                colEng: "Engagement",
+                colRate: "Rate %",
+                noData: "Enter data and click Generate Report",
+                emailTitle: "Final Report (Ready to Copy)",
+                copyBtn: "Copy Text",
+                printBtn: "Print PDF",
+                // Dynamic Fields Labels
+                Posts: "Posts",
+                Videos: "Videos",
+                Reach: "Reach",
+                Engagement: "Engagement",
+                Views: "Views",
+                Likes: "Likes",
+                Comments: "Comments",
+                Messages: "Messages",
+                // Twitter Specific
+                VerifiedFollowers: "Verified Followers",
+                Impressions: "Impressions",
+                EngagementRateInput: "Engagement Rate",
+                TwEngagements: "Engagements (Total)",
+                ProfileVisits: "Profile Visits",
+                Replies: "Replies",
+                Reposts: "Reposts",
+                Bookmarks: "Bookmarks",
+                TwShares: "Shares"
+            }
+        };
 
-        // Initialize Charts
-        function initCharts() {
-            const ctxLeads = document.getElementById('leadsChart').getContext('2d');
-            const ctxReach = document.getElementById('reachChart').getContext('2d');
+        let currentLang = 'ar';
 
-            leadsChartInstance = new Chart(ctxLeads, {
-                type: 'bar',
-                data: { labels: [], datasets: [{ label: 'الرسائل (Leads)', data: [], backgroundColor: '#10B981', borderRadius: 5 }] },
-                options: { responsive: true, plugins: { legend: { display: false } } }
-            });
+        // --- Configuration: Platforms List ---
+        // Each platform has a 'fields' array defining its inputs
+        const platforms = [
+            { 
+                id: 'linkedin', name: 'LinkedIn', icon: 'fa-linkedin', color: '#0077b5',
+                fields: [
+                    { key: 'Posts', type: 'count' },
+                    { key: 'Reach', type: 'reach' },
+                    { key: 'Engagement', type: 'eng' }
+                ]
+            },
+            { 
+                id: 'facebook', name: 'Facebook', icon: 'fa-facebook', color: '#1877f2',
+                fields: [
+                    { key: 'Posts', type: 'count' },
+                    { key: 'Reach', type: 'reach' },
+                    { key: 'Engagement', type: 'eng' }
+                ]
+            },
+            { 
+                id: 'instagram', name: 'Instagram', icon: 'fa-instagram', color: '#c32aa3',
+                fields: [
+                    { key: 'Posts', type: 'count' },
+                    { key: 'Reach', type: 'reach' },
+                    { key: 'Engagement', type: 'eng' }
+                ]
+            },
+            { 
+                id: 'twitter', name: 'Twitter (X)', icon: 'fa-twitter', color: '#000000',
+                fields: [ // Updated to exact list requested
+                    { key: 'VerifiedFollowers', type: 'growth' }, // متابِعون موثَّقون
+                    { key: 'Impressions', type: 'reach' }, // مرات الظهور
+                    { key: 'EngagementRateInput', type: 'info' }, // معدل المشاركة (Input)
+                    { key: 'TwEngagements', type: 'eng' }, // المشاركات (Total Engagements)
+                    { key: 'ProfileVisits', type: 'eng_bonus' }, // زيارات الملف الشخصيّ
+                    { key: 'Replies', type: 'eng_part' }, // الردود
+                    { key: 'Likes', type: 'eng_part' }, // الإعجابات
+                    { key: 'Reposts', type: 'eng_part' }, // المنشورات المُعاد نشرها
+                    { key: 'Bookmarks', type: 'eng_part' }, // العلامات المرجعية
+                    { key: 'TwShares', type: 'eng_part' } // المشاركات (Shares)
+                ]
+            },
+            { 
+                id: 'tiktok', name: 'TikTok', icon: 'fa-tiktok', color: '#000000',
+                fields: [ // As requested: Views, Likes, Comments
+                    { key: 'Videos', type: 'count' },
+                    { key: 'Views', type: 'reach' },
+                    { key: 'Likes', type: 'eng_part' },
+                    { key: 'Comments', type: 'eng_part' }
+                ]
+            },
+            { 
+                id: 'youtube', name: 'YouTube', icon: 'fa-youtube', color: '#ff0000',
+                fields: [ // As requested: Views, Likes, Comments
+                    { key: 'Videos', type: 'count' },
+                    { key: 'Views', type: 'reach' },
+                    { key: 'Likes', type: 'eng_part' },
+                    { key: 'Comments', type: 'eng_part' }
+                ]
+            },
+            { 
+                id: 'snapchat', name: 'Snapchat', icon: 'fa-snapchat-ghost', color: '#fffc00', textColor: 'text-black',
+                fields: [
+                    { key: 'Videos', type: 'count' },
+                    { key: 'Views', type: 'reach' },
+                    { key: 'Likes', type: 'eng_part' }
+                ]
+            },
+            { 
+                id: 'whatsapp', name: 'WhatsApp Ch.', icon: 'fa-whatsapp', color: '#25d366',
+                fields: [
+                    { key: 'Posts', type: 'count' },
+                    { key: 'Reach', type: 'reach' }, 
+                    { key: 'Engagement', type: 'eng' } 
+                ]
+            },
+            { 
+                id: 'telegram', name: 'Telegram Ch.', icon: 'fa-telegram', color: '#0088cc',
+                fields: [
+                    { key: 'Messages', type: 'count' },
+                    { key: 'Reach', type: 'reach' },
+                    { key: 'Engagement', type: 'eng' }
+                ]
+            }
+        ];
 
-            reachChartInstance = new Chart(ctxReach, {
-                type: 'line',
-                data: { labels: [], datasets: [{ label: 'الوصول (Reach)', data: [], borderColor: '#3B82F6', tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.1)' }] },
-                options: { responsive: true, plugins: { legend: { display: false } } }
-            });
-        }
+        // --- Functions ---
 
-        // Add Data Function
-        function addMonthData(e) {
-            e.preventDefault();
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
             
-            // Get values
-            const month = document.getElementById('monthInput').value;
-            const posts = parseInt(document.getElementById('postsInput').value);
-            const reach = parseInt(document.getElementById('reachInput').value);
-            const engagement = parseInt(document.getElementById('engagementInput').value);
-            const leads = parseInt(document.getElementById('leadsInput').value);
-
-            // Calculations
-            let growth = 0;
-            let leadsGrowth = 0; // New: Calculate Leads Growth separately
-
-            if (reportData.length > 0) {
-                const lastData = reportData[reportData.length - 1];
-                
-                // Reach Growth
-                if (lastData.reach > 0) {
-                    growth = ((reach - lastData.reach) / lastData.reach) * 100;
-                }
-                
-                // Leads Growth
-                if (lastData.leads > 0) {
-                    leadsGrowth = ((leads - lastData.leads) / lastData.leads) * 100;
-                }
+            // Update Body Direction/Font
+            const body = document.body;
+            if (currentLang === 'en') {
+                body.classList.add('ltr');
+                body.setAttribute('dir', 'ltr');
+                document.getElementById('langBtnText').innerText = "عربي";
+            } else {
+                body.classList.remove('ltr');
+                body.setAttribute('dir', 'rtl');
+                document.getElementById('langBtnText').innerText = "English";
             }
 
-            const engRate = ((engagement / reach) * 100).toFixed(2);
-            const convRate = ((leads / reach) * 100).toFixed(2);
+            // Update Static Text
+            document.querySelectorAll('[data-key]').forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (translations[currentLang][key]) {
+                    el.innerText = translations[currentLang][key];
+                }
+            });
 
-            // Add to array
-            const newData = { 
-                month, 
-                posts, 
-                reach, 
-                engagement, 
-                leads, 
-                growth: growth.toFixed(1),
-                leadsGrowth: leadsGrowth.toFixed(1), // Store leads growth
-                engRate, 
-                convRate 
-            };
-            reportData.push(newData);
-
-            // Update UI
-            updateTable();
-            updateChartsData();
-            updateSummaryCards();
-            generateEmailTemplate(newData);
-
-            // Reset form partly
-            document.getElementById('postsInput').value = '';
-            document.getElementById('reachInput').value = '';
-            document.getElementById('engagementInput').value = '';
-            document.getElementById('leadsInput').value = '';
+            // Re-render Form Inputs to update labels
+            renderForm();
+            
+            // Re-render Table Header text direction
+            const ths = document.querySelectorAll('th');
+            ths.forEach(th => th.style.textAlign = currentLang === 'en' ? 'left' : 'right');
         }
 
-        // Update Table
-        function updateTable() {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '';
-            reportData.forEach(row => {
-                const growthClass = row.growth > 0 ? 'text-green-600' : (row.growth < 0 ? 'text-red-600' : 'text-gray-600');
-                const growthIcon = row.growth > 0 ? '↑' : (row.growth < 0 ? '↓' : '-');
+        function renderForm() {
+            const container = document.getElementById('platformsContainer');
+            // Save current values to restore them after re-render
+            const storedValues = {};
+            const inputs = container.querySelectorAll('input');
+            inputs.forEach(inp => storedValues[inp.id] = inp.value);
+
+            container.innerHTML = '';
+            
+            platforms.forEach(p => {
+                // Generate grid based on number of fields (2 cols or 3 cols)
+                const gridCols = p.fields.length > 3 ? 'grid-cols-2' : 'grid-cols-3';
                 
+                let fieldsHTML = '';
+                p.fields.forEach(field => {
+                    const label = translations[currentLang][field.key] || field.key;
+                    const inputId = `${p.id}_${field.key}`;
+                    const val = storedValues[inputId] || '';
+                    const placeholder = field.key === 'EngagementRateInput' ? 'e.g. 5.2%' : '0';
+                    const inputType = field.key === 'EngagementRateInput' ? 'text' : 'number';
+
+                    fieldsHTML += `
+                        <div>
+                            <label class="block text-[10px] text-gray-500 font-bold mb-1">${label}</label>
+                            <input type="${inputType}" id="${inputId}" value="${val}" class="w-full border p-1 rounded text-sm focus:border-blue-500 bg-white" placeholder="${placeholder}">
+                        </div>
+                    `;
+                });
+
+                const section = `
+                    <div class="bg-slate-50 p-3 rounded border border-slate-200 hover:border-blue-300 transition">
+                        <div class="flex items-center mb-2 font-bold text-${p.textColor ? 'slate-800' : p.id === 'tiktok' ? 'slate-800' : p.id }">
+                            <i class="fab ${p.icon} w-6 text-lg" style="color:${p.color}"></i>
+                            <span class="mr-2 mx-2">${p.name}</span>
+                        </div>
+                        <div class="grid ${gridCols} gap-2">
+                            ${fieldsHTML}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += section;
+            });
+        }
+
+        let comparisonChart = null;
+
+        function initChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Reach/Views', data: [], backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'Engagement', data: [], backgroundColor: '#22c55e', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function calculateReport(e) {
+            e.preventDefault();
+            
+            const monthText = document.getElementById('monthInput').options[document.getElementById('monthInput').selectedIndex].text;
+
+            let grandTotalReach = 0;
+            let grandTotalEng = 0;
+            let platformData = [];
+            let topPlatform = { name: '-', reach: 0 };
+
+            platforms.forEach(p => {
+                let posts = 0;
+                let reach = 0;
+                let eng = 0;
+                let details = [];
+
+                // Iterate through dynamic fields to calculate standard KPIs
+                p.fields.forEach(field => {
+                    const inputElem = document.getElementById(`${p.id}_${field.key}`);
+                    const val = field.key === 'EngagementRateInput' ? inputElem.value : (parseInt(inputElem.value) || 0);
+                    
+                    // Add to detailed list string (skip 0s unless it's text)
+                    const label = translations[currentLang][field.key];
+                    if (val !== 0 && val !== '') details.push(`${label}: ${val.toLocaleString()}`);
+
+                    // Normalize Logic for Aggregation
+                    if (field.type === 'count') posts = val;
+                    if (field.type === 'reach') reach = val; 
+                    if (field.type === 'eng') eng = val;
+                    // For platforms where we sum up parts (like TikTok likes+comments)
+                    // Note: Twitter "TwEngagements" (type: eng) is the TOTAL provided by user, so we take it directly.
+                    // Twitter parts (Likes, Reposts...) are type 'eng_part' but since we have the total 'TwEngagements', 
+                    // we should NOT double count them if 'TwEngagements' is present.
+                    // Logic check: if platform has explicit 'eng' field, use that. If not, sum 'eng_part'.
+                    
+                    const hasExplicitEng = p.fields.some(f => f.type === 'eng');
+                    if (!hasExplicitEng && field.type === 'eng_part') eng += val;
+                    
+                    // Bonus stats (Profile Visits) generally don't count towards standard "Engagement" metric in comparisons usually, 
+                    // but often people want to see them. Let's keep them in 'details' but not add to 'eng' total to avoid inflation vs other platforms,
+                    // unless specified.
+                });
+
+                grandTotalReach += reach;
+                grandTotalEng += eng;
+
+                if (reach > topPlatform.reach) {
+                    topPlatform = { name: p.name, reach: reach, stat: reach.toLocaleString() };
+                }
+
+                if (details.length > 0) {
+                    const er = reach > 0 ? ((eng / reach) * 100).toFixed(2) : 0;
+                    platformData.push({ 
+                        ...p, 
+                        posts, 
+                        reach, 
+                        eng, 
+                        er, 
+                        detailsStr: details.join(' | ') 
+                    });
+                }
+            });
+
+            // Update UI
+            document.getElementById('grandReach').innerText = grandTotalReach.toLocaleString();
+            document.getElementById('grandEng').innerText = grandTotalEng.toLocaleString();
+            
+            const reachLabel = currentLang === 'ar' ? 'وصول/مشاهدات' : 'Reach/Views';
+            document.getElementById('topPlatformName').innerText = topPlatform.name;
+            document.getElementById('topPlatformStat').innerText = `${topPlatform.stat} ${reachLabel}`;
+
+            updateTable(platformData);
+            updateChart(platformData);
+            generateEmail(monthText, grandTotalReach, grandTotalEng, topPlatform, platformData);
+        }
+
+        function updateTable(data) {
+            const tbody = document.getElementById('detailsTableBody');
+            tbody.innerHTML = '';
+            
+            data.sort((a, b) => b.reach - a.reach);
+
+            data.forEach(row => {
                 const tr = `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="p-3 font-bold">${row.month}</td>
-                        <td class="p-3">${row.posts}</td>
-                        <td class="p-3">${row.reach.toLocaleString()}</td>
-                        <td class="p-3">${row.engagement.toLocaleString()} <span class="text-xs text-gray-500">(${row.engRate}%)</span></td>
-                        <td class="p-3 font-bold text-blue-800">${row.leads}</td>
-                        <td class="p-3 ${growthClass} font-bold" dir="ltr">${row.growth}% ${growthIcon}</td>
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-2 font-bold text-slate-700 text-start">
+                            <i class="fab ${row.icon} mx-2" style="color:${row.color}"></i>${row.name}
+                        </td>
+                        <td class="p-2 text-center text-xs text-gray-500">${row.posts > 0 ? row.posts : '-'}</td>
+                        <td class="p-2 font-bold text-center">${row.reach.toLocaleString()}</td>
+                        <td class="p-2 text-center">${row.eng.toLocaleString()}</td>
+                        <td class="p-2 text-blue-600 font-bold text-center">${row.er}%</td>
                     </tr>
                 `;
                 tbody.innerHTML += tr;
             });
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center p-4 text-gray-400">${translations[currentLang].noData}</td></tr>`;
+            }
         }
 
-        // Update Charts
-        function updateChartsData() {
-            const labels = reportData.map(d => d.month);
-            const leads = reportData.map(d => d.leads);
-            const reach = reportData.map(d => d.reach);
-
-            leadsChartInstance.data.labels = labels;
-            leadsChartInstance.data.datasets[0].data = leads;
-            leadsChartInstance.update();
-
-            reachChartInstance.data.labels = labels;
-            reachChartInstance.data.datasets[0].data = reach;
-            reachChartInstance.update();
-        }
-
-        // Update Summary Cards
-        function updateSummaryCards() {
-            if (reportData.length === 0) return;
+        function updateChart(data) {
+            comparisonChart.data.labels = data.map(d => d.name);
+            comparisonChart.data.datasets[0].label = translations[currentLang].colReach;
+            comparisonChart.data.datasets[1].label = translations[currentLang].colEng;
             
-            // Calculate averages/totals based on all data
-            let totalReach = 0;
-            let totalEngRate = 0;
-            let totalConvRate = 0;
-
-            reportData.forEach(d => {
-                totalReach += d.reach;
-                totalEngRate += parseFloat(d.engRate);
-                totalConvRate += parseFloat(d.convRate);
-            });
-
-            document.getElementById('totalReachDisplay').innerText = totalReach.toLocaleString();
-            document.getElementById('avgEngRate').innerText = (totalEngRate / reportData.length).toFixed(2) + '%';
-            document.getElementById('avgConvRate').innerText = (totalConvRate / reportData.length).toFixed(2) + '%';
+            comparisonChart.data.datasets[0].data = data.map(d => d.reach);
+            comparisonChart.data.datasets[1].data = data.map(d => d.eng);
+            comparisonChart.update();
         }
 
-        // Generate Smart Email Template
-        function generateEmailTemplate(data) {
-            // Logic for Reach Text
-            let reachText = "";
-            if (data.growth > 0) {
-                reachText = `📈 مما يمثل زيادة بنسبة ${data.growth}% مقارنة بالشهر السابق.`;
-            } else if (data.growth < 0) {
-                reachText = `📉 مما يمثل تراجعاً طفيفاً بنسبة ${Math.abs(data.growth)}% مقارنة بالشهر السابق.`;
-            } else {
-                reachText = `مع الحفاظ على ثبات معدلات الوصول مقارنة بالشهر السابق.`;
-            }
+        function generateEmail(month, totalReach, totalEng, topPlatform, data) {
+            let mostEngaging = data.reduce((max, obj) => (obj.eng > max.eng) ? obj : max, data[0] || {name: '-', eng: 0});
+            
+            const lang = currentLang;
+            let report = '';
 
-            // Logic for Leads Text
-            let leadsText = "";
-            if (data.leadsGrowth > 0) {
-                leadsText = `(بزيادة ${data.leadsGrowth}% عن الشهر الماضي)`;
-            } else if (data.leadsGrowth < 0) {
-                leadsText = `(بتراجع ${Math.abs(data.leadsGrowth)}% عن الشهر الماضي)`;
-            }
+            if (lang === 'ar') {
+                const breakdown = data.map(p => `- ${p.name}: ${p.detailsStr}`).join('\n\n');
+                report = `الموضوع: تقرير الأداء الرقمي - ${month}
 
-            const emailText = `العنوان: تقرير أداء المحتوى الرقمي - شهر ${data.month}
-
-السيد/ محمد شتات،
+السيد المدير،
 تحياتي،
 
-إليك ملخص أداء المحتوى لهذا الشهر، وتأثيره المباشر على أهداف الأكاديمية:
+إليك ملخص أداء المنصات الرقمية (Digital Ecosystem):
 
-1. الأرقام الرئيسية (Key Highlights):
-- قمنا بنشر ${data.posts} قطعة محتوى (تعليمي/ترويجي).
-- حققنا وصولاً (Reach) لـ ${data.reach.toLocaleString()} عميل محتمل، ${reachText}
-- نجحنا في جذب ${data.leads} استفسار مباشر (Leads) عن الكورسات ${leadsText}، بمعدل تحويل ${data.convRate}%.
+1. الملخص العام:
+- إجمالي المشاهدات/الوصول: ${totalReach.toLocaleString()}
+- إجمالي التفاعل (Likes, Comments, Shares): ${totalEng.toLocaleString()}
 
-2. الجودة والتفاعل:
-- بلغ معدل التفاعل ${data.engRate}%، مما يعكس مدى اهتمام الجمهور بالمحتوى المقدم.
+2. أبرز المنصات:
+- 🏆 الأكثر انتشاراً: ${topPlatform.name}
+- 🔥 الأكثر تفاعلاً: ${mostEngaging.name}
 
-3. التوصيات للشهر القادم:
-بناءً على هذه الأرقام، سنقوم بالتركيز على تحسين المحتوى لزيادة عدد الرسائل (Leads) بشكل أكبر.
+3. التفاصيل:
+${breakdown}
 
-مرفق،،
-تقرير البيانات التفصيلي.`;
+مع التحية.`;
+            } else {
+                const breakdown = data.map(p => `- ${p.name}: ${p.detailsStr}`).join('\n\n');
+                report = `Subject: Digital Performance Report - ${month}
 
-            document.getElementById('emailTemplate').value = emailText;
+Dear Manager,
+Greetings,
+
+Here is the summary of our Digital Ecosystem performance:
+
+1. Overview:
+- Total Reach/Views: ${totalReach.toLocaleString()}
+- Total Engagement: ${totalEng.toLocaleString()}
+
+2. Top Performers:
+- 🏆 Highest Reach: ${topPlatform.name}
+- 🔥 Highest Engagement: ${mostEngaging.name}
+
+3. Breakdown:
+${breakdown}
+
+Best regards.`;
+            }
+
+            document.getElementById('emailTemplate').value = report;
         }
 
-        // Copy Function
         function copyEmail() {
-            const copyText = document.getElementById("emailTemplate");
-            copyText.select();
+            document.getElementById("emailTemplate").select();
             document.execCommand("copy");
-            alert("تم نسخ النص! يمكنك لصقه الآن في الإيميل.");
+            alert(currentLang === 'ar' ? "تم نسخ النص!" : "Text Copied!");
         }
 
-        // Start
-        window.onload = initCharts;
+        // Initialize
+        window.onload = function() {
+            renderForm();
+            initChart();
+        };
 
     </script>
 </body>
 </html>
-
